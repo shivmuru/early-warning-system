@@ -4,7 +4,7 @@ FEDFUNDS.csv,https://fred.stlouisfed.org/series/FEDFUNDS,06ded1625e05391a1407f1d
 PET_CRD_CRPDN_ADC_MBBL_M.xls,http://www.eia.gov/dnav/pet/pet_crd_crpdn_adc_mbbl_m.htm,a4f11a0bd539a58d8edbbc433a6e12ad501ca8829ecba3bd272bacaf6e68af47
 PET_MOVE_IMPCUS_A2_NUS_EP00_IM0_MBBL_M.xls,http://www.eia.gov/dnav/pet/pet_move_impcus_a2_nus_ep00_im0_mbbl_m.htm,2fe80c671ba216452379ad60111e1de2c7cc1d674981967f678411c53da5480a
 PET_PRI_GND_A_EPM0_PTE_DPGAL_W.xls,http://www.eia.gov/dnav/pet/pet_pri_gnd_a_epm0_pte_dpgal_w.htm,3c06873be72fa58cf588757e2d4db4cce3a26cb4754b40512e95b9ff901cbc8b
-PET_STOC_WSTK_DCU_NUS_W.xls,https://www.eia.gov/dnav/pet/pet_stoc_wstk_dcu_nus_w.htm,47a07425ead5053dc8c3c89fce5aecdca0e0290b451004aa60522586862dcdd5
+PET_STOC_WSTK_DCU_NUS_W.xls,http://www.eia.gov/dnav/pet/pet_stoc_wstk_dcu_nus_w.htm,47a07425ead5053dc8c3c89fce5aecdca0e0290b451004aa60522586862dcdd5
 RBRTEw.xls,https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=RBRTE&f=W,0699b5795559b1593c5380887980f1e65c784b56787da937f12a0543c3310c93
 RNGWHHDw.xls,http://www.eia.gov/dnav/ng/hist/rngwhhdw.htm,0c66c61ac6a9a171dc58bcf8da71f6bea92129639bb2c9acc03fcff145363322
 RTWEXBGS.csv,https://fred.stlouisfed.org/series/RTWEXBGS,75a12674171a2cfef692eff2768cdb05b5c0f98d5ba6cbd3242d404303cc1bb6
