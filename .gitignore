@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+
+# Data is rebuilt locally; see data/MANIFEST.csv
+data/raw/*
+data/processed/
+!data/raw/.gitkeep
