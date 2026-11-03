@@ -1,0 +1,13 @@
+file,source,sha256
+CPIAUCSL.csv,https://fred.stlouisfed.org/series/CPIAUCSL,8556b710094027fa4724641d48be620cc37c04abfa15a0c496378cf1146c1549
+FEDFUNDS.csv,https://fred.stlouisfed.org/series/FEDFUNDS,06ded1625e05391a1407f1d7d721e482e8b62916c6c5fe9491b76d74285ddd69
+PET_CRD_CRPDN_ADC_MBBL_M.xls,http://www.eia.gov/dnav/pet/pet_crd_crpdn_adc_mbbl_m.htm,a4f11a0bd539a58d8edbbc433a6e12ad501ca8829ecba3bd272bacaf6e68af47
+PET_MOVE_IMPCUS_A2_NUS_EP00_IM0_MBBL_M.xls,http://www.eia.gov/dnav/pet/pet_move_impcus_a2_nus_ep00_im0_mbbl_m.htm,2fe80c671ba216452379ad60111e1de2c7cc1d674981967f678411c53da5480a
+PET_PRI_GND_A_EPM0_PTE_DPGAL_W.xls,http://www.eia.gov/dnav/pet/pet_pri_gnd_a_epm0_pte_dpgal_w.htm,3c06873be72fa58cf588757e2d4db4cce3a26cb4754b40512e95b9ff901cbc8b
+PET_STOC_WSTK_DCU_NUS_W.xls,https://www.eia.gov/dnav/pet/pet_stoc_wstk_dcu_nus_w.htm,47a07425ead5053dc8c3c89fce5aecdca0e0290b451004aa60522586862dcdd5
+RBRTEw.xls,https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=RBRTE&f=W,0699b5795559b1593c5380887980f1e65c784b56787da937f12a0543c3310c93
+RNGWHHDw.xls,http://www.eia.gov/dnav/ng/hist/rngwhhdw.htm,0c66c61ac6a9a171dc58bcf8da71f6bea92129639bb2c9acc03fcff145363322
+RTWEXBGS.csv,https://fred.stlouisfed.org/series/RTWEXBGS,75a12674171a2cfef692eff2768cdb05b5c0f98d5ba6cbd3242d404303cc1bb6
+RWTCw.xls,https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=RWTC&f=W,8862e6c08f2482762f509a21c527e243f9c25393829838a03842e40981f46761
+T10Y2Y.csv,https://fred.stlouisfed.org/series/T10Y2Y,d0c018e87e3c8752295398183b09989eb6bb72ce6d0cf9c97a5c9f058becc7d5
+VIXCLS.csv,https://fred.stlouisfed.org/series/VIXCLS,94dd44a77d3969d0f24a0bea3619aa589f7f1d7787c53403b444b4e4ebf53d17
