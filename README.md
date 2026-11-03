@@ -1,4 +1,4 @@
-# FuelSignal
+# Energy Early-Warning System
 
 An early-warning system that estimates whether a US region's gasoline prices will reach distress
 levels within the next 1-3 months. The aim is to give energy assistance programs and community
