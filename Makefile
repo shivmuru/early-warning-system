@@ -1,4 +1,4 @@
-.PHONY: install lint test data backtest all
+.PHONY: install lint test data backtest grouped expanded all
 
 install:
 	pip install -e ".[dev]"
@@ -16,3 +16,9 @@ backtest:
 	fuelsignal backtest
 
 all: lint test data backtest
+
+grouped:
+	fuelsignal grouped
+
+expanded:
+	python scripts/fetch_series.py && fuelsignal expanded

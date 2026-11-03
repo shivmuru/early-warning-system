@@ -31,6 +31,8 @@ class ModelSpec:
     columns: tuple[str, ...] | None = None
     k: int = config.N_FACTORS
     classifier: str = "logit"
+    regime: bool = True
+    groups: tuple[tuple[str, tuple[str, ...]], ...] | None = None
 
 
 def model_specs() -> list[ModelSpec]:
@@ -123,6 +125,16 @@ def training_windows(
 def _factor_features(
     predictors: pd.DataFrame, spec: ModelSpec, data_end: pd.Period, test_end: pd.Period
 ) -> pd.DataFrame:
+    if spec.factor_engine == "group_pca":
+        frames = []
+        for name, members in spec.groups:
+            members = list(members)
+            scores, _ = pca_factors(
+                predictors.loc[: data_end, members], predictors.loc[: test_end, members], 1,
+                config.SEED,
+            )
+            frames.append(scores.rename(columns={"factor_1": f"group_{name}"}))
+        return pd.concat(frames, axis=1)
     columns = list(spec.columns) if spec.columns else list(predictors.columns)
     train = predictors.loc[: data_end, columns]
     full = predictors.loc[: test_end, columns]
@@ -130,6 +142,8 @@ def _factor_features(
         factors = dfm_factors(train, full, spec.k)
     else:
         factors, _ = pca_factors(train, full, spec.k, config.SEED)
+    if not spec.regime:
+        return factors
     stress = stress_probability(
         factors.loc[: data_end], factors, config.N_REGIMES, config.SEED
     )
@@ -162,7 +176,7 @@ def walk_forward(design: pd.DataFrame, calendar: list[str], predictors: pd.DataF
             frame = labeled
             factor_cols: list[str] = []
             if spec.factor_engine:
-                key = (spec.factor_engine, spec.columns, spec.k)
+                key = (spec.factor_engine, spec.columns, spec.k, spec.regime, spec.groups)
                 if key not in factor_cache:
                     factor_cache[key] = _factor_features(predictors, spec, data_end, test_end)
                 factors = factor_cache[key]
