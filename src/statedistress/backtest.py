@@ -76,7 +76,8 @@ def windows(months: pd.PeriodIndex) -> list[tuple[pd.Period, pd.Period, pd.Perio
 
 
 def dfm_cache_path(k: int, data_end: pd.Period, test_end: pd.Period) -> Path:
-    return config.CACHE_DIR / "dfm" / f"k{k}_{data_end}_{test_end}_iter{config.DFM_MAX_ITER}.pkl"
+    name = f"k{k}_{data_end}_{test_end}_iter{config.DFM_MAX_ITER}_iid.pkl"
+    return config.CACHE_DIR / "dfm" / name
 
 
 def clip_outliers(train: pd.DataFrame, full: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -95,7 +96,9 @@ def factors_for(
         return pd.read_pickle(cached)
     train, full = clip_outliers(predictors.loc[:data_end], predictors.loc[:test_end])
     if spec.engine == "dfm":
-        factors = dfm_factors(train, full, spec.k, config.DFM_MAX_ITER)
+        factors = dfm_factors(
+            train, full, spec.k, config.DFM_MAX_ITER, idiosyncratic_ar1=False
+        )
         cached.parent.mkdir(parents=True, exist_ok=True)
         factors.to_pickle(cached)
         return factors

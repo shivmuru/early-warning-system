@@ -27,7 +27,7 @@ SENSITIVITY_FACTORS = (3, 8)
 N_REGIMES = 2
 ALERT_THRESHOLD = 0.25
 OUTLIER_SD = 5.0
-DFM_MAX_ITER = 30
+DFM_MAX_ITER = 100
 SEED = 7
 
 # Used only to evaluate results, never as a model input.
