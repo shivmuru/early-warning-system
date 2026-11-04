@@ -92,6 +92,21 @@ PR-AUC gaps, with 90% intervals from resampling whole test years:
 - **Seasonality matters.** Most labels fall from December to February, so any model has to beat the
   calendar baseline.
 
+### Grouped PCA and the 34-series extension
+
+A later test added PCA directly to the best model, with no regime signal. This is a new hypothesis
+checked on a test period already seen, so treat it as exploratory.
+
+| Model | Series | PR-AUC | Gap vs. local + crude | 90% interval |
+| --- | ---: | ---: | ---: | --- |
+| Local + crude | 0 factors | 0.433 | | |
+| Local + crude + 1 PCA factor per group | 17 | 0.262 | -0.171 | -0.298 to +0.018 |
+| Local + crude + 4 PCA factors | 17 | 0.236 | -0.197 | -0.313 to +0.010 |
+
+`scripts/fetch_series.py` downloads 17 more pre-specified series. `make expanded` then runs the same
+comparison on all 34. The expanded run has not been executed, and its series IDs and download URLs
+need to be confirmed by that first run.
+
 ## Limitations
 
 - The best model was picked by comparing results on the same test period, so its score is likely

@@ -8,7 +8,14 @@ import json
 import pandas as pd
 
 from fuelsignal import config
-from fuelsignal.backtest import bootstrap_gap, build_design, episode_summary, score, walk_forward
+from fuelsignal.backtest import (
+    ModelSpec,
+    bootstrap_gap,
+    build_design,
+    episode_summary,
+    score,
+    walk_forward,
+)
 from fuelsignal.data import (
     build_cpi,
     build_levels,
@@ -17,6 +24,7 @@ from fuelsignal.data import (
     data_dictionary,
     load_raw,
 )
+from fuelsignal.expanded import group_map, load_new_predictors, missing_files
 from fuelsignal.factors import bai_ng_icp2, pca_factors
 from fuelsignal.labels import build_panel
 
@@ -86,11 +94,55 @@ def run_backtest() -> None:
     print(json.dumps(summary, indent=2))
 
 
+def _group_specs(extended: bool, label: str) -> list[ModelSpec]:
+    groups = tuple((k, tuple(v)) for k, v in group_map(extended).items())
+    base = ("calendar", "local", "crude", "factors")
+    return [
+        ModelSpec(f"local_crude_group_pca_{label}", base, "group_pca", regime=False, groups=groups),
+        ModelSpec(f"local_crude_pca4_{label}", base, "pca", regime=False),
+    ]
+
+
+def run_grouped(extended: bool) -> None:
+    levels, predictors, prices, panel = prepare()
+    label = "34" if extended else "17"
+    if extended:
+        missing = missing_files()
+        if missing:
+            raise SystemExit("Missing files, run scripts/fetch_series.py:\n" + "\n".join(missing))
+        predictors = predictors.join(load_new_predictors())
+    design, calendar = build_design(panel, prices, levels)
+    baseline = ModelSpec("local_crude", ("calendar", "local", "crude"))
+    specs = [baseline, *_group_specs(extended, label)]
+    results = walk_forward(design, calendar, predictors, specs)
+    summary = {
+        "note": "New hypothesis checked on a test period already seen; confirm on later data.",
+        "series": predictors.shape[1],
+        "models": {
+            name: {**score(group), **episode_summary(group)}
+            for name, group in results.groupby("model", sort=False)
+        },
+        "comparisons": {
+            f"{spec.name}_vs_local_crude": bootstrap_gap(results, spec.name, "local_crude")
+            for spec in specs[1:]
+        },
+    }
+    path = config.REPORTS_DIR / f"grouped_pca_{label}_series.json"
+    path.write_text(json.dumps(summary, indent=2) + "\n")
+    print(json.dumps(summary, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="fuelsignal")
-    parser.add_argument("command", choices=["data", "backtest"])
+    parser.add_argument("command", choices=["data", "backtest", "grouped", "expanded"])
     args = parser.parse_args()
-    {"data": run_data, "backtest": run_backtest}[args.command]()
+    commands = {
+        "data": run_data,
+        "backtest": run_backtest,
+        "grouped": lambda: run_grouped(False),
+        "expanded": lambda: run_grouped(True),
+    }
+    commands[args.command]()
 
 
 if __name__ == "__main__":

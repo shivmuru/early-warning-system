@@ -1,0 +1,54 @@
+{
+  "note": "New hypothesis checked on a test period already seen; confirm on later data.",
+  "series": 17,
+  "models": {
+    "local_crude": {
+      "pr_auc": 0.4329897130367773,
+      "roc_auc": 0.8441501946928944,
+      "brier": 0.06480790185236451,
+      "alert_rate": 0.1289198606271777,
+      "precision_at_threshold": 0.35135135135135137,
+      "recall_at_threshold": 0.5842696629213483,
+      "region_episodes": 40,
+      "episodes_warned_early": 30,
+      "episode_recall": 0.75,
+      "median_lead_months": 2.0
+    },
+    "local_crude_group_pca_17": {
+      "pr_auc": 0.2619192853249813,
+      "roc_auc": 0.8122778538158746,
+      "brier": 0.0787792039377478,
+      "alert_rate": 0.13763066202090593,
+      "precision_at_threshold": 0.2974683544303797,
+      "recall_at_threshold": 0.5280898876404494,
+      "region_episodes": 40,
+      "episodes_warned_early": 25,
+      "episode_recall": 0.625,
+      "median_lead_months": 3.0
+    },
+    "local_crude_pca4_17": {
+      "pr_auc": 0.23600916501030464,
+      "roc_auc": 0.8254023829985888,
+      "brier": 0.08504285201423376,
+      "alert_rate": 0.1437282229965157,
+      "precision_at_threshold": 0.3090909090909091,
+      "recall_at_threshold": 0.5730337078651685,
+      "region_episodes": 40,
+      "episodes_warned_early": 28,
+      "episode_recall": 0.7,
+      "median_lead_months": 3.0
+    }
+  },
+  "comparisons": {
+    "local_crude_group_pca_17_vs_local_crude": {
+      "gap": -0.17107042771179598,
+      "ci_low": -0.29794034673601244,
+      "ci_high": 0.017939247203953634
+    },
+    "local_crude_pca4_17_vs_local_crude": {
+      "gap": -0.19698054802647266,
+      "ci_low": -0.31296314026527045,
+      "ci_high": 0.009661143507329845
+    }
+  }
+}
