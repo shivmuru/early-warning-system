@@ -1,147 +1,102 @@
-# Energy Early-Warning System
+# State Unemployment Distress: Early-Warning System
 
-This repo has two early-warning projects: FuelSignal, described below, and [state unemployment distress](docs/state-distress.md).
+This project estimates whether a US state will enter unemployment distress within the next 6 months.
+It covers all 50 states and DC, using walk-forward tests from January 2000 to February 2025.
 
-An early-warning system that estimates whether a US region's gasoline prices will reach distress
-levels within the next 1-3 months. The aim is to give energy assistance programs and community
-organizations time to prepare.
-
-**Main result:** simple oil-price and local-price signals beat the macro factor models in a
-2012-2025 walk-forward backtest. The best model, using recent local and crude price moves, reached
-a PR-AUC of 0.43 compared with 0.17 for a calendar-only baseline. Adding the macro factors did not
-improve on it.
+**Main result:** the state's own unemployment trend plus the national trend reached a PR-AUC of 0.570,
+compared with a 7.0% base rate. No pre-specified PCA, DFM, or hand-picked macro model beat it. A
+3-factor PCA run added afterward scored 0.614, but that gain is not statistically clear and needs
+testing on new data.
 
 ## What counts as distress
 
-A region-month is labeled 1 when, within the next three months, the inflation-adjusted price:
+A state is in distress when its 3-month average unemployment rate is at least 1 percentage point
+above its low over the prior 12 months.
 
-1. rises at least 15% from the current month, and
-2. ends above its average for the 36 months ending in the current month.
+Each warning row is a state not yet in distress. It is labeled 1 if the state enters distress within 6
+months. Rows with unknown outcomes are dropped.
 
-The second condition keeps rebounds from a crash, such as April 2020, from counting as distress.
-
-| Example | Peak real rise within 3 months | Above 36-month average? | Label |
-| --- | ---: | --- | ---: |
-| Midwest, Dec 2021 | +29.9% | Yes | 1 |
-| US, Apr 2020 | +20.4% | No | 0 |
-| Midwest, Jun 2022 | -12.1% | No rise | 0 |
+The full sample has 25,251 rows, 1,839 positives, and 313 state episodes.
 
 ## Data
 
-The panel runs monthly from January 2006 to November 2025 across 7 non-overlapping EIA regions,
-with 17 predictors:
+| Source | Contents | Assumed release delay |
+| --- | --- | --- |
+| [FRED-MD](https://www.stlouisfed.org/research/economists/mccracken/fred-databases), October 2026 file | 126 national series | 1 month, or 2 months for slower series |
+| [FRED-SD](https://www.stlouisfed.org/research/economists/owyang/fred-sd), April 2026 file | State unemployment, jobs, sector jobs, and claims | 1 month |
 
-| Group | Series |
-| --- | --- |
-| Energy prices | Brent, WTI, Henry Hub |
-| Macro and financial | Real broad dollar, fed funds rate, 10Y-2Y curve, VIX |
-| US inventories | Commercial crude, SPR, gasoline, distillate, jet fuel, residual fuel |
-| US supply | Crude production, total imports, Persian Gulf imports, Canadian imports |
-
-Raw files are not stored in this public repo. `data/MANIFEST.csv` lists each source and the SHA-256
-of the file used.
+Raw files are not stored in this repo. `data/MANIFEST.csv` lists each source and the SHA-256 of the file
+used.
 
 ## Preventing lookahead
 
-- **Hard cutoff:** nothing released after November 30, 2025 can enter any output. A test corrupts
-  all later values and confirms that the outputs do not change.
-- **Release lags:** each value counts only once it would have been public: 1 day for daily data and
-  retail prices, 5 days for weekly EIA data, 1 month for the dollar and fed funds, and 3 months for
-  production and imports.
-- **Walk-forward training:** models are refit each January. Training labels must have complete
-  outcomes before the refit date.
-- **Filtered estimates:** DFM factors and HMM regime probabilities use filtered values, not smoothed
-  ones. Their parameters come only from the training window.
-- **Local features:** model inputs use nominal prices because same-month CPI was not yet public.
+- **Cutoff:** nothing public after November 30, 2025 is used.
+- **Release delays:** each value counts only after its assumed release delay.
+- **Walk-forward training:** models are refit yearly, and training labels must have known outcomes.
+- **Factors:** PCA and DFM parameters come only from training data. The DFM and regime models use
+  filtered values, and outlier limits are also set on training data.
+- **Tests:** one test changes later data and confirms that earlier predictions do not change.
 
 ## Results
 
-Out-of-sample test period: January 2012 to August 2025. It covers 1,148 region-months, 89 positives
-(7.8%), and 10 separate episodes across regions (40 regional episodes). Alerts use a probability
-threshold of 0.30, set before the backtest.
+The test period has 13,294 rows, 929 positives (7.0%), and 157 state episodes. Alerts fire at a
+probability of 0.25, set in advance.
 
-| Model | PR-AUC | ROC-AUC | Brier | Alert precision | Alert recall | Regional episodes warned early |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Calendar and region | 0.169 | 0.776 | 0.078 | 19% | 44% | 26/40 |
-| Calendar + crude | 0.411 | 0.841 | 0.064 | 38% | 60% | 28/40 |
-| Calendar + local prices | 0.327 | 0.839 | 0.067 | 33% | 56% | 30/40 |
-| **Calendar + local prices + crude** | **0.433** | **0.844** | **0.065** | **35%** | **58%** | **30/40** |
-| Local + energy-only DFM + regime | 0.195 | 0.778 | 0.080 | 26% | 40% | 19/40 |
-| Local + all-series DFM + regime | 0.225 | 0.784 | 0.080 | 25% | 48% | 26/40 |
-| Local + all-series PCA + regime | 0.184 | 0.784 | 0.098 | 21% | 38% | 18/40 |
-| Local + all-series DFM + regime, boosted | 0.142 | 0.671 | 0.086 | 14% | 23% | 15/40 |
+| Model | PR-AUC | PR-AUC without COVID | Alert precision | Alert recall | Episodes warned |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| **State + national trend** | **0.570** | **0.688** | **51%** | **56%** | **139/157** |
+| State trend | 0.546 | 0.660 | 49% | 55% | 131/157 |
+| Boosted PCA | 0.541 | 0.654 | 62% | 48% | 139/157 |
+| PCA, 5 factors | 0.511 | 0.577 | 45% | 50% | 148/157 |
+| PCA + industry exposure | 0.495 | 0.557 | 41% | 49% | 146/157 |
+| Trends + state jobs, claims, and industry mix | 0.484 | 0.540 | 47% | 46% | 140/157 |
+| PCA + regime | 0.470 | 0.525 | 43% | 46% | 143/157 |
+| DFM, 5 factors | 0.403 | 0.433 | 31% | 44% | 123/157 |
+| DFM + industry exposure | 0.400 | 0.433 | 29% | 45% | 130/157 |
+| Trends and state data + hand-picked macro | 0.399 | 0.466 | 35% | 46% | 121/157 |
 
-PR-AUC gaps, with 90% intervals from resampling whole test years:
+All PCA and DFM rows above also include the trends and state data. Bai-Ng selected 5 factors on
+pre-2000 data, matching the number fixed in advance.
 
-| Comparison | Gap | 90% interval |
+### Diagnostics
+
+Job data starts in 1990, so models using it train on less history. These runs were added after the
+first results to separate that effect from the effect of the factors. Intervals are 90%, from
+resampling whole test years.
+
+| Comparison | PR-AUC gap | 90% interval |
 | --- | ---: | --- |
-| Crude vs. calendar | +0.242 | +0.039 to +0.403 |
-| Local vs. calendar | +0.158 | +0.022 to +0.378 |
-| All-series DFM vs. calendar | +0.056 | -0.032 to +0.232 |
-| All-series DFM vs. local + crude | -0.208 | -0.302 to -0.052 |
-| All-series DFM vs. energy-only DFM | +0.030 | -0.062 to +0.155 |
+| Trend model trained from 1991 vs. from 1977 | -0.077 | -0.156 to -0.005 |
+| Adding state jobs, same 1991 history | -0.009 | -0.037 to +0.024 |
+| Adding 5 PCA factors, full history | -0.011 | -0.127 to +0.057 |
+| Adding 3 PCA factors, full history | +0.044 | -0.027 to +0.082 |
+| Adding 5 DFM factors, full history | -0.126 | -0.332 to +0.019 |
 
 ### What this means
 
-- **Oil and local prices carry the usable signal.** Both clearly beat the seasonal baseline.
-- **The factors did not earn their complexity.** The all-series DFM model was worse than the simple
-  local-and-crude model, and this data does not show a clear benefit from macro and financial series.
-- **The factor count is not settled.** The Bai-Ng criterion chose 8 factors, its maximum, on the
-  pre-2012 data. I fixed k = 4 in advance; k = 3 and k = 5 scored 0.294 and 0.208. These are
-  sensitivity checks and were not used to select a model.
-- **Seasonality matters.** Most labels fall from December to February, so any model has to beat the
-  calendar baseline.
-
-### Grouped PCA and the 34-series extension
-
-A later test added PCA directly to the best model, with no regime signal. This is a new hypothesis
-checked on a test period already seen, so treat it as exploratory.
-
-| Model | Series | PR-AUC | Gap vs. local + crude | 90% interval |
-| --- | ---: | ---: | ---: | --- |
-| Local + crude | 0 factors | 0.433 | | |
-| Local + crude + 1 PCA factor per group | 17 | 0.262 | -0.171 | -0.298 to +0.018 |
-| Local + crude + 4 PCA factors | 17 | 0.236 | -0.197 | -0.313 to +0.010 |
-
-`scripts/fetch_series.py` downloads 17 more pre-specified series. `make expanded` then runs the same
-comparison on all 34. The expanded run has not been executed, and its series IDs and download URLs
-need to be confirmed by that first run.
+- **Longer history helped more than extra inputs.**
+- **PCA is competitive, but not clearly better.**
+- **State-specific shocks are hard to predict.** Away from recessions, the state trend alone did best,
+  with a PR-AUC of 0.314.
+- **Regimes and industry-exposure terms did not help.**
 
 ## Limitations
 
-- The best model was picked by comparing results on the same test period, so its score is likely
-  somewhat optimistic. It needs confirmation on later data.
-- Ten separate episodes is a small sample, and regions move together.
-- Files contain current revised data, not the values first published.
-- October 2025 CPI was never published, and September 2025 is carried forward for October and
-  November.
-- Prices are the only outcome. The label does not measure income or household hardship.
-- Data after the cutoff has not been scored.
+- **Revised data:** the files contain later revisions, so results may be optimistic.
+- **Simplified DFM:** it uses independent noise and at most 100 iterations to stay within memory.
+- **Clustered events:** most positives fall around 2001, 2008, and 2020.
+- **Diagnostics:** these were added after seeing results and need confirmation on later data.
+- **Approximate timing:** release delays are simple rules, not exact historical dates.
 
 ## Run it
 
-Put the files listed in `data/MANIFEST.csv` in `data/raw/`, then:
+Put `2026-10-MD.csv` and `State_2026-04.xlsx` in `data/raw/`, then run:
 
 ```bash
 make install
 make test
-make data
-make backtest
+make state-backtest
 ```
 
-Outputs go to `data/processed/`. Metrics are in `reports/metrics.json`, and full-sample PCA loadings
-are in `reports/pca_loadings.csv`.
-
-## Layout
-
-```text
-src/fuelsignal/
-  config.py    Cutoff, label, and backtest settings
-  data.py      Point-in-time predictors and prices
-  labels.py    Distress labels and episodes
-  factors.py   PCA and Dynamic Factor Model
-  regimes.py   Gaussian HMM with a forward filter
-  backtest.py  Models, walk-forward testing, and metrics
-  cli.py       Command line entry point
-tests/         Unit tests and real-data leakage checks
-```
+Metrics are saved to `reports/state_distress/metrics.json`. The full methodology is in
+[`docs/state-distress.md`](docs/state-distress.md).
