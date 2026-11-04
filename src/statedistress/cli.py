@@ -34,6 +34,14 @@ COMPARISONS = [
     ("dfm", "pca"),
     ("dfm", "state_local"),
     ("dfm_exposure", "dfm"),
+    ("pca", "state_national"),
+    ("dfm", "state_national"),
+    ("diag_national_from_1991", "state_national"),
+    ("state_local", "diag_national_from_1991"),
+    ("pca", "diag_national_from_1991"),
+    ("diag_trend_pca", "state_national"),
+    ("diag_trend_dfm", "state_national"),
+    ("diag_trend_pca_k3", "state_national"),
 ]
 LEVELS = ["UNRATE", "T10YFFM", "BAAFFM", "VIXCLSx", "S&P 500", "OILPRICEx"]
 

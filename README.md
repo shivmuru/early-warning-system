@@ -1,5 +1,7 @@
 # Energy Early-Warning System
 
+This repo has two early-warning projects: FuelSignal, described below, and [state unemployment distress](docs/state-distress.md).
+
 An early-warning system that estimates whether a US region's gasoline prices will reach distress
 levels within the next 1-3 months. The aim is to give energy assistance programs and community
 organizations time to prepare.

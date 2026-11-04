@@ -30,6 +30,7 @@ class Spec:
     regime: bool = False
     interact: bool = False
     classifier: str = "logit"
+    train_start: str | None = None
 
 
 BASE = tuple(UR_FEATURES)
@@ -50,6 +51,11 @@ def model_specs() -> list[Spec]:
         Spec("dfm_exposure", LOCAL, "dfm", interact=True),
         Spec("pca_boosted", LOCAL, "pca", classifier="boost"),
         *[Spec(f"pca_k{k}", LOCAL, "pca", k=k) for k in config.SENSITIVITY_FACTORS],
+        # Added after the first results, to separate training history from factor effects.
+        Spec("diag_national_from_1991", TREND, train_start="1991-01"),
+        Spec("diag_trend_pca", TREND, "pca"),
+        Spec("diag_trend_dfm", TREND, "dfm"),
+        Spec("diag_trend_pca_k3", TREND, "pca", k=3),
     ]
 
 
@@ -150,6 +156,8 @@ def walk_forward(
                     frame = frame.assign(**products)
                     columns += list(products)
             train = frame[frame["month"] <= label_end].dropna(subset=columns)
+            if spec.train_start:
+                train = train[train["month"] >= pd.Period(spec.train_start, "M")]
             test = frame[frame["month"].between(test_start, test_end)].dropna(subset=columns)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
