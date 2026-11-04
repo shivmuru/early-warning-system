@@ -9,7 +9,16 @@ import pandas as pd
 
 from fuelsignal.factors import bai_ng_icp2, pca_factors
 from statedistress import config
-from statedistress.backtest import bootstrap_gap, episode_summary, score, subsets, walk_forward
+from statedistress.backtest import (
+    Spec,
+    bootstrap_gap,
+    episode_summary,
+    factors_for,
+    score,
+    subsets,
+    walk_forward,
+    windows,
+)
 from statedistress.data import load_state_panel, national_levels, national_predictors, read_md
 from statedistress.features import national_features, state_features
 from statedistress.labels import build_labels, distress_state
@@ -84,10 +93,24 @@ def run_backtest() -> None:
     print(f"Wrote {path}")
 
 
+def run_dfm_year(year: int) -> None:
+    """Fit one year's DFM and save its factors. Separate processes keep memory from building up."""
+    predictors, _, _, design = prepare()
+    months = pd.PeriodIndex(design["month"].unique(), freq="M")
+    for data_end, _, test_start, test_end in windows(months):
+        if test_start.year == year:
+            factors_for(predictors, Spec("dfm", engine="dfm"), data_end, test_end)
+            print(f"dfm {year} done", flush=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="statedistress")
-    parser.add_argument("command", choices=["data", "backtest"])
+    parser.add_argument("command", choices=["data", "backtest", "dfm-year"])
+    parser.add_argument("--year", type=int)
     args = parser.parse_args()
+    if args.command == "dfm-year":
+        run_dfm_year(args.year)
+        return
     {"data": run_data, "backtest": run_backtest}[args.command]()
 
 

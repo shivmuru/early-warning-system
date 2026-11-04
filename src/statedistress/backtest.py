@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -74,6 +75,10 @@ def windows(months: pd.PeriodIndex) -> list[tuple[pd.Period, pd.Period, pd.Perio
     return out
 
 
+def dfm_cache_path(k: int, data_end: pd.Period, test_end: pd.Period) -> Path:
+    return config.CACHE_DIR / "dfm" / f"k{k}_{data_end}_{test_end}_iter{config.DFM_MAX_ITER}.pkl"
+
+
 def clip_outliers(train: pd.DataFrame, full: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Limit each series to +/- OUTLIER_SD training standard deviations."""
     scaler = Scaler.fit(train)
@@ -85,9 +90,15 @@ def clip_outliers(train: pd.DataFrame, full: pd.DataFrame) -> tuple[pd.DataFrame
 def factors_for(
     predictors: pd.DataFrame, spec: Spec, data_end: pd.Period, test_end: pd.Period
 ) -> pd.DataFrame:
+    cached = dfm_cache_path(spec.k, data_end, test_end)
+    if spec.engine == "dfm" and cached.exists():
+        return pd.read_pickle(cached)
     train, full = clip_outliers(predictors.loc[:data_end], predictors.loc[:test_end])
     if spec.engine == "dfm":
-        return dfm_factors(train, full, spec.k, config.DFM_MAX_ITER)
+        factors = dfm_factors(train, full, spec.k, config.DFM_MAX_ITER)
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        factors.to_pickle(cached)
+        return factors
     factors, _ = pca_factors(train, full, spec.k, config.SEED)
     return factors
 
