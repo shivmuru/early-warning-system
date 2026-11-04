@@ -35,7 +35,13 @@ def pca_factors(
     return pd.DataFrame(scores, index=full.index, columns=columns), model
 
 
-def dfm_factors(train: pd.DataFrame, full: pd.DataFrame, k: int) -> pd.DataFrame:
+def dfm_factors(
+    train: pd.DataFrame,
+    full: pd.DataFrame,
+    k: int,
+    maxiter: int = 200,
+    idiosyncratic_ar1: bool = True,
+) -> pd.DataFrame:
     """Fit a DFM on ``train``, then return filtered factors for ``full``.
 
     Filtered values use only observations up to each row, unlike smoothed values, which would
@@ -47,8 +53,11 @@ def dfm_factors(train: pd.DataFrame, full: pd.DataFrame, k: int) -> pd.DataFrame
     full_z.index = full_z.index.to_timestamp()
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        model = DynamicFactorMQ(train_z, factors=k, factor_orders=1, standardize=False)
-        result = model.fit(disp=False, maxiter=200)
+        model = DynamicFactorMQ(
+            train_z, factors=k, factor_orders=1, idiosyncratic_ar1=idiosyncratic_ar1,
+            standardize=False,
+        )
+        result = model.fit(disp=False, maxiter=maxiter)
         filtered = result.apply(full_z).factors.filtered
     columns = [f"factor_{i + 1}" for i in range(k)]
     return pd.DataFrame(filtered.values, index=full.index, columns=columns)

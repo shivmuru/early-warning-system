@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
   "hmmlearn>=0.3",
   "numpy>=1.26",
+  "openpyxl>=3.1",
   "pandas>=2.1",
   "scikit-learn>=1.4",
   "scipy>=1.11",
@@ -23,6 +24,7 @@ dev = ["pytest>=8", "ruff>=0.5"]
 
 [project.scripts]
 fuelsignal = "fuelsignal.cli:main"
+statedistress = "statedistress.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
